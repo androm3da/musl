@@ -96,7 +96,13 @@ $(OBJ_DIRS):
 	mkdir -p $@
 
 obj/include/bits/alltypes.h: $(srcdir)/arch/$(ARCH)/bits/alltypes.h.in $(srcdir)/include/alltypes.h.in $(srcdir)/tools/mkalltypes.sed
+ifeq ($(ARCH),hexagon)
+	sh $(srcdir)/tools/gen-hexagon-alltypes.sh $(TIME32) > $@.tmp
+	sed -f $(srcdir)/tools/mkalltypes.sed $@.tmp $(srcdir)/include/alltypes.h.in > $@
+	rm -f $@.tmp
+else
 	sed -f $(srcdir)/tools/mkalltypes.sed $(srcdir)/arch/$(ARCH)/bits/alltypes.h.in $(srcdir)/include/alltypes.h.in > $@
+endif
 
 obj/include/bits/syscall.h: $(srcdir)/arch/$(ARCH)/bits/syscall.h.in
 	cp $< $@

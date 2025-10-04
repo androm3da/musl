@@ -34,6 +34,7 @@ Optional features:
   --enable-wrapper=...    build given musl toolchain wrapper [auto]
   --disable-shared        inhibit building shared library [enabled]
   --disable-static        inhibit building static library [enabled]
+  --enable-time32         use 32-bit time_t for compatibility with older kernels [disabled]
 
 Optional packages:
   --with-malloc=...       choose malloc implementation [mallocng]
@@ -143,6 +144,7 @@ wrapper=auto
 gcc_wrapper=no
 clang_wrapper=no
 malloc_dir=mallocng
+time32=no
 
 for arg ; do
 case "$arg" in
@@ -165,6 +167,8 @@ case "$arg" in
 --disable-debug|--enable-debug=no) debug=no ;;
 --enable-warnings|--enable-warnings=yes) warnings=yes ;;
 --disable-warnings|--enable-warnings=no) warnings=no ;;
+--enable-time32|--enable-time32=yes) time32=yes ;;
+--disable-time32|--enable-time32=no) time32=no ;;
 --enable-wrapper|--enable-wrapper=yes) wrapper=detect ;;
 --enable-wrapper=all) wrapper=yes ; gcc_wrapper=yes ; clang_wrapper=yes ;;
 --enable-wrapper=gcc) wrapper=yes ; gcc_wrapper=yes ;;
@@ -803,6 +807,7 @@ ALL_TOOLS = $tools
 TOOL_LIBS = $tool_libs
 ADD_CFI = $ADD_CFI
 MALLOC_DIR = $malloc_dir
+TIME32 = $time32
 EOF
 test "x$static" = xno && echo "STATIC_LIBS ="
 test "x$shared" = xno && echo "SHARED_LIBS ="
@@ -812,5 +817,14 @@ test "x$pic_default" = xyes && echo 'AOBJS = $(LOBJS)'
 exec 1>&3 3>&-
 
 test "$srcdir" = "." || ln -sf $srcdir/Makefile .
+
+# Handle hexagon time32/time64 configuration
+if test "$ARCH" = "hexagon" ; then
+if test "$time32" = "yes" ; then
+cp $srcdir/arch/hexagon/bits/stat.h.time32 $srcdir/arch/hexagon/bits/stat.h
+else
+cp $srcdir/arch/hexagon/bits/stat.h.time64 $srcdir/arch/hexagon/bits/stat.h
+fi
+fi
 
 printf "done\n"
