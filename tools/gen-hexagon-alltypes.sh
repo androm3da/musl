@@ -1,0 +1,49 @@
+#!/bin/sh
+# Generate alltypes.h.in for hexagon based on time32 configuration
+
+if [ "$1" = "yes" ]; then
+    # time32 mode - no _REDIR_TIME64
+    cat << 'EOF'
+#define _Addr int
+#define _Int64 long long
+#define _Reg int
+
+#define __BYTE_ORDER 1234
+#define __LONG_MAX 0x7fffffffL
+
+#ifndef __cplusplus
+#ifdef __WCHAR_TYPE__
+TYPEDEF __WCHAR_TYPE__ wchar_t;
+#else
+TYPEDEF long wchar_t;
+#endif
+#endif
+
+TYPEDEF float float_t;
+TYPEDEF double double_t;
+TYPEDEF struct { long long __ll; long double __ld; } max_align_t;
+EOF
+else
+    # time64 mode - with _REDIR_TIME64
+    cat << 'EOF'
+#define _REDIR_TIME64 1
+#define _Addr int
+#define _Int64 long long
+#define _Reg int
+
+#define __BYTE_ORDER 1234
+#define __LONG_MAX 0x7fffffffL
+
+#ifndef __cplusplus
+#ifdef __WCHAR_TYPE__
+TYPEDEF __WCHAR_TYPE__ wchar_t;
+#else
+TYPEDEF long wchar_t;
+#endif
+#endif
+
+TYPEDEF float float_t;
+TYPEDEF double double_t;
+TYPEDEF struct { long long __ll; long double __ld; } max_align_t;
+EOF
+fi
